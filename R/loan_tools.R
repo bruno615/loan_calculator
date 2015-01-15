@@ -37,6 +37,14 @@ refresh_amort_table <- function(size, apr, duration, payment = calc_monthly_paym
 interest_earned <- function(size, apr, days) {
   size * apr * days / 365
 }
+eff_apr <- function(size, interest, days) { # Returns the APR over a given number of days based on the interest charged and loan size
+  interest * 365 / (size * days) 
+}
+tila_apr <- function(amort) {
+  eff_aprs <- eff_apr(amort$rem_principal[1:12], amort$interest[2:13], amort$period[2:13])
+  sum(eff_aprs * amort$period[2:13]) / sum(amort$period)  
+}
+
 
 truncate <- function(x, digits = 0) { #because for some reason R does not do this...
   trunc(x * 10^digits) / 10^digits
@@ -47,5 +55,17 @@ period <- c(0,37,30,31,31,31,30,31,30,31,31,30,31)
 
 amort <- calc_amort_table(1000, .95, 12, period = period)
 finance_charge <- sum(amort$interest)
+
+profit_point <- function(amort) {
+  x <- 0
+  i <- 1
+  while (x < amort$rem_principal[1]) {
+    x <- sum(amort$payment[1:i])
+    i = i + 1
+  }
+  i
+}
+profit_point(amort)
+tila_apr(amort)
 
 
